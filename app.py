@@ -1,7 +1,9 @@
 import requests
 import json
-import csv 
 from requests.api import request 
+import pymysql
+
+
 
 
 if __name__ == '__main__':
@@ -35,13 +37,39 @@ with open('movies.json', 'w') as f:
 with open('series.json','w') as f:
     json.dump(series, f, indent = 4)
 
-# Cargar la base de datos:
+#conexion db
+connection = pymysql.connect(
+    host = 'localhost',
+    user = 'root',
+    password = 'starz123',
+    db ='starz'
+)
+
+cursor = connection.cursor()
+
+def armarLink(s,id):
+    sacarEspacios = s.replace(' ', '-')
+    link = 'www.starz.com/ar/es/movies/' + sacarEspacios +'-' +str(id)
+    return link
+
 
 with open('movies.json') as contenidoJSON:
     movies = json.load(contenidoJSON)
     for movie in movies:
-        print('title: ', movie.get('title'), ' Year: ', movie.get('releaseYear'))
-
+        link = armarLink(movie.get('title'), movie.get('contentId'))
+        cursor.execute(
+                         "INSERT INTO pelicula(id, titulo, anio, sinopsis, duracion,link) VALUES(%s, %s, %s, %s,%s,%s)",  (movie.get('contentId'),
+                                    movie.get('title'),
+                                    movie.get('releaseYear'), 
+                                    movie.get('logLine'),
+                                    movie.get('runtime'),
+                                    link))
+        connection.commit()
         
+
+    
+ 
+
+ 
 
 
